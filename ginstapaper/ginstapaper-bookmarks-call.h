@@ -47,15 +47,15 @@ typedef void (*GInstapaperBookmarksListCallback)(GList        *bookmarks,
                                                  const GError *error,
                                                  gpointer      userdata);
 
-GType                     ginstapaper_bookmarks_call_get_type (void) G_GNUC_CONST;
-GInstapaperBookmarksCall* ginstapaper_bookmarks_call_new      (GInstapaperProxy *proxy);
-gboolean                  ginstapaper_bookmarks_call_list     (GInstapaperBookmarksCall          *bookmarks_call, 
-                                                               guint                              limit, 
-                                                               gchar                             *folder_id, 
-                                                               gchar                             *have, 
-                                                               GInstapaperBookmarksListCallback   callback, 
-                                                               gpointer                           user_data, 
-                                                               GError                           **error);
+GType                     ginstapaper_bookmarks_call_get_type   (void) G_GNUC_CONST;
+GInstapaperBookmarksCall* ginstapaper_bookmarks_call_new        (GInstapaperProxy *proxy);
+gboolean                  ginstapaper_bookmarks_call_list_async (GInstapaperBookmarksCall          *bookmarks_call, 
+                                                                 guint                              limit, 
+                                                                 gchar                             *folder_id, 
+                                                                 gchar                             *have, 
+                                                                 GInstapaperBookmarksListCallback   callback, 
+                                                                 gpointer                           user_data, 
+                                                                 GError                           **error);
 
 G_END_DECLS
 

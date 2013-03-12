@@ -31,15 +31,18 @@ G_BEGIN_DECLS
 #define GINSTAPAPER_IS_PROXY_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GINSTAPAPER_TYPE_PROXY))
 #define GINSTAPAPER_PROXY_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), GINSTAPAPER_TYPE_PROXY, GInstapaperProxyClass))
 
-typedef struct {
+typedef struct _GInstapaperProxy      GInstapaperProxy;
+typedef struct _GInstapaperProxyClass GInstapaperProxyClass;
+
+struct _GInstapaperProxy {
         OAuthProxy parent;
-} GInstapaperProxy;
+};
 
-typedef struct {
+struct _GinstapaperProxyClass {
         OAuthProxyClass parent_class;
-} GInstapaperProxyClass;
+};
 
-GType ginstapaper_proxy_get_type (void);
+GType ginstapaper_proxy_get_type (void) G_GNUC_CONST;
 
 GInstapaperProxy* ginstapaper_proxy_new                (const gchar            *consumer_key,
                                                         const gchar            *consumer_secret);
@@ -54,4 +57,3 @@ gboolean          ginstapaper_proxy_access_token_async (GInstapaperProxy       *
 G_END_DECLS
 
 #endif /* _GINSTAPAPER_PROXY */
-

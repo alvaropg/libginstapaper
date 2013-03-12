@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 8; tab-width: 8 -*-  */
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 8; tab-width: 8 -*-  */
 /*
  * libginstapaper - GObject library for Instapaper
  * Copyright (C) 2013 Álvaro Peña <alvaropg@gmail.com>
@@ -60,12 +60,10 @@ list_cb (RestProxyCall *call, const GError *error, GObject *weak_object, gpointe
         ListData *data = user_data;
         GList *bookmarks = NULL;
 
-	/*
-        g_print ("Payload: %s\nStatus Code: %d\nStatus Message: %s\n",
+        g_debug ("Payload: %s\nStatus Code: %d\nStatus Message: %s\n",
                  rest_proxy_call_get_payload (call),
                  rest_proxy_call_get_status_code (call),
                  rest_proxy_call_get_status_message (call));
-	*/
 
         if (!error) {
                 const gchar *payload;
@@ -95,16 +93,16 @@ list_cb (RestProxyCall *call, const GError *error, GObject *weak_object, gpointe
                                                         if (GINSTAPAPER_IS_BOOKMARK (bookmark)) {
                                                                 bookmarks = g_list_append (bookmarks, bookmark);
                                                         } else {
-                                                                g_error ("Type bookmark object can't be deserialize");
+                                                                g_debug ("Type bookmark object can't be deserialize");
                                                         }
                                                 }
                                         }
                                 }
                         } else {
-				g_error ("Root node isn't an array");
+				g_debug ("Root node isn't an array");
 			}
                 } else {
-			g_error ("Can't parse payload");
+			g_debug ("Can't parse payload");
 		}
         }
 
@@ -123,7 +121,7 @@ ginstapaper_bookmarks_call_new (GInstapaperProxy *proxy)
 }
 
 gboolean
-ginstapaper_bookmarks_call_list (GInstapaperBookmarksCall *bookmarks_call, guint limit, gchar *folder_id, gchar *have, GInstapaperBookmarksListCallback callback, gpointer user_data, GError **error)
+ginstapaper_bookmarks_call_list_async (GInstapaperBookmarksCall *bookmarks_call, guint limit, gchar *folder_id, gchar *have, GInstapaperBookmarksListCallback callback, gpointer user_data, GError **error)
 {
         RestProxyCall *call;
         ListData *data;

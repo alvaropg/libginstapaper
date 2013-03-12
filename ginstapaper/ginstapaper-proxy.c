@@ -1,3 +1,22 @@
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 8; tab-width: 8 -*-  */
+/*
+ * libginstapaper - GObject Instapaper library
+ * Copyright (C) 2013 Álvaro Peña <alvaropg@gmail.com>
+ *
+ * This library is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * libginstapaper is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "ginstapaper-proxy.h"
 
 #include <rest/oauth-proxy-call.h>
@@ -7,7 +26,9 @@ typedef struct {
         gpointer user_data;
 } AuthData;
 
-static void ginstapaper_proxy_finalize (GObject *object);
+static void ginstapaper_proxy_class_init (GInstapaperProxyClass *klass);
+static void ginstapaper_proxy_init       (GInstapaperProxy *self);
+static void ginstapaper_proxy_finalize   (GObject *object);
 
 G_DEFINE_TYPE (GInstapaperProxy, ginstapaper_proxy, OAUTH_TYPE_PROXY)
 
@@ -27,12 +48,6 @@ static void
 ginstapaper_proxy_finalize (GObject *object)
 {
         G_OBJECT_CLASS (ginstapaper_proxy_parent_class)->finalize (object);
-}
-
-static void
-_headers_fe (gpointer key, gpointer value, gpointer user_data)
-{
-        g_debug ("\tH: %s - V: %s\n", (gchar *) key, (gchar *) value);
 }
 
 static void
