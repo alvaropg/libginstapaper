@@ -17,6 +17,16 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * SECTION:ginstapaper-bookmarks-call
+ * @short_description: The call object for retrieve bookmarks data from Instapaper
+ * @title: GInstapaperBookmarksCall
+ * @include: ginstapaper/ginstapaper-bookmarks-call.h
+ *
+ * This object provides a easy to use #RestProxyCall object with the common functions available in the
+ * Instapaper API.
+ */
+
 #include <json-glib/json-glib.h>
 
 #include "ginstapaper-bookmarks-call.h"
@@ -45,6 +55,7 @@ ginstapaper_bookmarks_call_class_init (GInstapaperBookmarksCallClass *klass)
 static void
 ginstapaper_bookmarks_call_init (GInstapaperBookmarksCall *self)
 {
+        /* All the Instapaper API functions require the params via POST method */
         rest_proxy_call_set_method (REST_PROXY_CALL (self), "POST");
 }
 
@@ -112,14 +123,19 @@ list_cb (RestProxyCall *call, const GError *error, GObject *weak_object, gpointe
         g_object_unref (call);
 }
 
-GInstapaperBookmarksCall*
-ginstapaper_bookmarks_call_new (GInstapaperProxy *proxy)
-{
-        g_return_val_if_fail (GINSTAPAPER_IS_PROXY (proxy), NULL);
-
-	return GINSTAPAPER_BOOKMARKS_CALL (g_object_new (GINSTAPAPER_TYPE_BOOKMARKS_CALL, "proxy", proxy, NULL));
-}
-
+/**
+ * ginstapaper_bookmarks_call_list_async:
+ * @bookmarks_call: The #GInstapaperBookmarksCall
+ * @limit: Optional. A number between 1 and 500, default 25. The limit of bookmarks for retrieve
+ * @folder_id: Optional. Possible values are unread (default), starred, archive, or a folder_id value from /api/1/folders/list.
+ * @have: Optional. A concatenation of bookmark_id values that the client already has from the specified folder.
+ * @callback: a #GInstapaperBookmarksListCallback to call when the bookmarks list was retrieved.
+ * @user_data: data to pass to @callback
+ * @error: a #GError, or %NULL
+ *
+ * Returns: %TRUE if the get bookmarks list query was successfully queued, or %FALSE on
+ * failure. On failure @error is set.
+ */
 gboolean
 ginstapaper_bookmarks_call_list_async (GInstapaperBookmarksCall *bookmarks_call, guint limit, gchar *folder_id, gchar *have, GInstapaperBookmarksListCallback callback, gpointer user_data, GError **error)
 {
@@ -144,4 +160,20 @@ ginstapaper_bookmarks_call_list_async (GInstapaperBookmarksCall *bookmarks_call,
         data->user_data = user_data;
 
         return rest_proxy_call_async (call, list_cb, NULL, data, error);
+}
+
+/**
+ * ginstapaper_bookmarks_call_new:
+ * @proxy: the #GInstapaperProxy to use as API client.
+ *
+ * Creates a new #GInstapaperBookmarksCall.
+ *
+ * Return value: a new #GInstapaperBookmarksCall, or %NULL; unref with g_object_unref()
+ */
+GInstapaperBookmarksCall*
+ginstapaper_bookmarks_call_new (GInstapaperProxy *proxy)
+{
+        g_return_val_if_fail (GINSTAPAPER_IS_PROXY (proxy), NULL);
+
+	return GINSTAPAPER_BOOKMARKS_CALL (g_object_new (GINSTAPAPER_TYPE_BOOKMARKS_CALL, "proxy", proxy, NULL));
 }

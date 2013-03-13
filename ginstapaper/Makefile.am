@@ -17,3 +17,5 @@ libginstapaper_@API_VERSION@_la_LIBADD = $(LIBGINSTAPAPER_LIBS)
 libginstapaper_@API_VERSION@_la_SOURCES = $(lib_sources) $(lib_headers)
 libginstapaper_@API_VERSION@_la_HEADERS = $(lib_headers)
 libginstapaper_@API_VERSION@_ladir = $(includedir)/ginstapaper-@API_VERSION@/ginstapaper
+
+-include $(top_srcdir)/git.mk

@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 8; tab-width: 8 -*-  */
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 8; tab-width: 8 -*-  */
 /*
  * ginstapaper.h
  * Copyright (C) 2013 Álvaro Peña <alvaropg@gmail.com>

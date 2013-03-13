@@ -6,3 +6,5 @@ AM_LDFLAGS = $(top_srcdir)/ginstapaper/libginstapaper-@API_VERSION@.la $(LIBGINS
 noinst_PROGRAMS = $(TESTS)
 
 auth_SOURCES = auth.c
+
+-include $(top_srcdir)/git.mk

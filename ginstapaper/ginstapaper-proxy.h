@@ -17,8 +17,8 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GINSTAPAPER_PROXY
-#define _GINSTAPAPER_PROXY
+#ifndef __GINSTAPAPER_PROXY__
+#define __GINSTAPAPER_PROXY__
 
 #include <rest/oauth-proxy.h>
 
@@ -38,7 +38,7 @@ struct _GInstapaperProxy {
         OAuthProxy parent;
 };
 
-struct _GinstapaperProxyClass {
+struct _GInstapaperProxyClass {
         OAuthProxyClass parent_class;
 };
 
@@ -47,8 +47,8 @@ GType ginstapaper_proxy_get_type (void) G_GNUC_CONST;
 GInstapaperProxy* ginstapaper_proxy_new                (const gchar            *consumer_key,
                                                         const gchar            *consumer_secret);
 gboolean          ginstapaper_proxy_access_token_async (GInstapaperProxy       *gi_oauth,
-                                                        gchar                  *username,
-                                                        gchar                  *password,
+                                                        const gchar            *username,
+                                                        const gchar            *password,
                                                         OAuthProxyAuthCallback  callback,
                                                         GObject                *weak_object,
                                                         gpointer                user_data,
@@ -56,4 +56,4 @@ gboolean          ginstapaper_proxy_access_token_async (GInstapaperProxy       *
 
 G_END_DECLS
 
-#endif /* _GINSTAPAPER_PROXY */
+#endif /* __GINSTAPAPER_PROXY__ */

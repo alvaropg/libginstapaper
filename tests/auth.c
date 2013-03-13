@@ -10,10 +10,13 @@ get_list_cb (GList *bookmarks, const GError *error, gpointer user_data)
 {
         while (bookmarks) {
                 GInstapaperBookmark *book;
+                gchar *title;
 
                 book = bookmarks->data;
-                g_print ("%s\n", ginstapaper_bookmark_get_title (book));
-                g_print ("%s\n\n", ginstapaper_bookmark_get_description (book));
+                g_object_get (G_OBJECT (book), "title", &title, NULL);
+                g_print ("%s\n", title);
+                g_free (title);
+                g_object_unref (book);
 
                 bookmarks = g_list_next (bookmarks);
         }
@@ -28,7 +31,7 @@ get_list (GInstapaperProxy *proxy)
         GError *error = NULL;
 
         call = ginstapaper_bookmarks_call_new (proxy);
-        ginstapaper_bookmarks_call_list (call, 4, NULL, NULL, get_list_cb, NULL, &error);
+        ginstapaper_bookmarks_call_list_async (call, 4, NULL, NULL, get_list_cb, NULL, &error);
 }
 
 static gboolean

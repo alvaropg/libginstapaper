@@ -24,3 +24,5 @@ EXTRA_DIST = $(libginstapaperdoc_DATA)
 # Remove doc directory on uninstall
 uninstall-local:
 	-rm -r $(libginstapaperdocdir)
+
+-include $(top_srcdir)/git.mk

@@ -17,8 +17,8 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GINSTAPAPER_BOOKMARK_H_
-#define _GINSTAPAPER_BOOKMARK_H_
+#ifndef __GINSTAPAPER_BOOKMARK_H__
+#define __GINSTAPAPER_BOOKMARK_H__
 
 #include <glib-object.h>
 
@@ -53,5 +53,4 @@ const gchar *ginstapaper_bookmark_get_description (GInstapaperBookmark *bookmark
 
 G_END_DECLS
 
-#endif /* _GINSTAPAPER_BOOKMARK_H_ */
-
+#endif /* __GINSTAPAPER_BOOKMARK_H__ */

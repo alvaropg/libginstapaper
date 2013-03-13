@@ -40,12 +40,18 @@ struct _GInstapaperBookmarksCall {
 };
 
 struct _GInstapaperBookmarksCallClass {
-	OAuthProxyCallClass parent_class;
+        OAuthProxyCallClass parent_class;
 };
 
-typedef void (*GInstapaperBookmarksListCallback)(GList        *bookmarks,
-                                                 const GError *error,
-                                                 gpointer      userdata);
+/**
+ * GInstapaperBookmarksListCallback:
+ * @bookmarks: a #GList with #GInstapaperBookmark objects in
+ * @error: a #GError
+ * @user_data: user data passed to the callback
+ *
+ * Callback function called when the list function was finished.
+ */
+typedef void (*GInstapaperBookmarksListCallback)(GList *bookmarks, const GError *error, gpointer user_data);
 
 GType                     ginstapaper_bookmarks_call_get_type   (void) G_GNUC_CONST;
 GInstapaperBookmarksCall* ginstapaper_bookmarks_call_new        (GInstapaperProxy *proxy);
@@ -60,4 +66,3 @@ gboolean                  ginstapaper_bookmarks_call_list_async (GInstapaperBook
 G_END_DECLS
 
 #endif /* __GINSTAPAPER_BOOKMARKS_CALL_H__ */
-
