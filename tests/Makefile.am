@@ -1,4 +1,4 @@
-TESTS = auth
+TESTS = auth gtestutils
 
 AM_CPPFLAGS = -I$(top_srcdir) $(LIBGINSTAPAPER_CFLAGS)
 AM_LDFLAGS = $(top_srcdir)/ginstapaper/libginstapaper-@API_VERSION@.la $(LIBGINSTAPAPER_LIBS)
@@ -6,5 +6,7 @@ AM_LDFLAGS = $(top_srcdir)/ginstapaper/libginstapaper-@API_VERSION@.la $(LIBGINS
 noinst_PROGRAMS = $(TESTS)
 
 auth_SOURCES = auth.c
+
+gtestutils_SOURCES = gtestutils.c
 
 -include $(top_srcdir)/git.mk

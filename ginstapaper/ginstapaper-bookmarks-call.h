@@ -55,6 +55,12 @@ typedef void (*GInstapaperBookmarksListCallback)(GList *bookmarks, const GError 
 
 GType                     ginstapaper_bookmarks_call_get_type   (void) G_GNUC_CONST;
 GInstapaperBookmarksCall* ginstapaper_bookmarks_call_new        (GInstapaperProxy *proxy);
+gboolean                  ginstapaper_bookmarks_call_list       (GInstapaperBookmarksCall  *bookmarks_call, 
+                                                                 guint                      limit, 
+                                                                 gchar                     *folder_id,
+                                                                 gchar                     *have,
+                                                                 GList                     **bookmark_list,
+                                                                 GError                    **error);
 gboolean                  ginstapaper_bookmarks_call_list_async (GInstapaperBookmarksCall          *bookmarks_call, 
                                                                  guint                              limit, 
                                                                  gchar                             *folder_id, 

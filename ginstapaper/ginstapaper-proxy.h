@@ -46,6 +46,10 @@ GType ginstapaper_proxy_get_type (void) G_GNUC_CONST;
 
 GInstapaperProxy* ginstapaper_proxy_new                (const gchar            *consumer_key,
                                                         const gchar            *consumer_secret);
+gboolean          ginstapaper_proxy_access_token       (GInstapaperProxy       *gi_proxy,
+                                                        const gchar            *username,
+                                                        const gchar            *password,
+                                                        GError                **error);
 gboolean          ginstapaper_proxy_access_token_async (GInstapaperProxy       *gi_oauth,
                                                         const gchar            *username,
                                                         const gchar            *password,

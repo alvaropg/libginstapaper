@@ -67,7 +67,7 @@ main (int argc, char **argv)
 
         loop = g_main_loop_new (NULL, TRUE);
 
-        proxy = ginstapaper_proxy_new ("your_consumer_key", "your_consumer_secrete");
+        proxy = ginstapaper_proxy_new ("your_consumer_key", "your_consumer_secret");
         ginstapaper_proxy_access_token_async (proxy, "username", "password", access_token_cb, NULL, NULL, &error);
 
         g_main_loop_run (loop);

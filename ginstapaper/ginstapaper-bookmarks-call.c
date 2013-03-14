@@ -124,6 +124,45 @@ list_cb (RestProxyCall *call, const GError *error, GObject *weak_object, gpointe
 }
 
 /**
+ * ginstapaper_bookmarks_call_list:
+ * @bookmarks_call: The #GInstapaperBookmarksCall
+ * @limit: Optional. A number between 1 and 500, default 25. The limit of bookmarks for retrieve
+ * @folder_id: Optional. Possible values are unread (default), starred, archive, or a folder_id value from /api/1/folders/list.
+ * @have: Optional. A concatenation of bookmark_id values that the client already has from the specified folder.
+ * @bookmarks_list: A #GList to store the #GInstapaperBookmark objects retrieved by Instapaper
+ * @error: a #GError, or %NULL
+ *
+ * Returns: %TRUE if the get bookmarks list query was successfully executed, or %FALSE on
+ * failure. On failure @error is set.
+ */
+gboolean
+ginstapaper_bookmarks_call_list (GInstapaperBookmarksCall *bookmarks_call, guint limit, gchar *folder_id, gchar *have, GList **bookmark_list, GError **error)
+{
+        RestProxyCall *call;
+        gboolean ret;
+
+        g_return_val_if_fail (GINSTAPAPER_IS_BOOKMARKS_CALL (bookmarks_call), FALSE);
+        g_return_val_if_fail (limit > 0 && limit < 501, FALSE);
+
+        call = REST_PROXY_CALL (bookmarks_call);
+        rest_proxy_call_set_function (call, LIST_FUNCTION);
+        rest_proxy_call_add_param (call, "limit", g_strdup_printf ("%d", limit));
+        if (folder_id) {
+                rest_proxy_call_add_param (call, "foder_id", folder_id);
+        }
+        if (have) {
+                rest_proxy_call_add_param (call, "have", have);
+        }
+
+        ret = rest_proxy_call_sync (call, error);
+        if (ret) {
+                /* TODO: parse payload (in a common function with the async method */
+        }
+
+        return ret;
+}
+
+/**
  * ginstapaper_bookmarks_call_list_async:
  * @bookmarks_call: The #GInstapaperBookmarksCall
  * @limit: Optional. A number between 1 and 500, default 25. The limit of bookmarks for retrieve

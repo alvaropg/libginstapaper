@@ -88,6 +88,51 @@ access_token_cb (RestProxyCall *call,
 }
 
 /**
+ * ginstapaper_proxy_access_token:
+ * @gi_proxy: The #GInstapaperProxy client you want to get the access token
+ * @username: The user's username
+ * @password: The user's password
+ * @error: a #GError, or %NULL
+ *
+ * Get the access token synchronously with an Instapaper account.
+ *
+ * After call some query, you need to get an access token. If you have an access 
+ * token and an access token private already you can skip this step and set it with 
+ * ginstapaper_proxy_set_tokens().
+ *
+ * Returns: %TRUE if the request token query was successfully queued, or %FALSE on
+ * failure. On failure @error is set.
+ */
+gboolean
+ginstapaper_proxy_access_token (GInstapaperProxy  *gi_proxy,
+                                const gchar       *username,
+                                const gchar       *password,
+                                GError           **error)
+{
+        RestProxyCall *call;
+
+        call = rest_proxy_new_call (REST_PROXY (gi_proxy));
+
+        rest_proxy_call_set_function (call, "oauth/access_token");
+        rest_proxy_call_set_method (call, "POST");
+
+        rest_proxy_call_add_param (call, "x_auth_username", username);
+        rest_proxy_call_add_param (call, "x_auth_password", password);
+        rest_proxy_call_add_param (call, "x_auth_mode", "client_auth");
+
+        if (!rest_proxy_call_run (call, NULL, error)) {
+                g_object_unref (call);
+                return FALSE;
+        }
+
+        oauth_proxy_call_parse_token_reponse (OAUTH_PROXY_CALL (call));
+
+        g_object_unref (call);
+
+        return TRUE;
+}
+
+/**
  * ginstapaper_proxy_access_token_async:
  * @gi_proxy: The #GInstapaperProxy client you want to get the access token
  * @username: The user's username
@@ -97,11 +142,12 @@ access_token_cb (RestProxyCall *call,
  * @user_data: data to pass to @callback
  * @error: a #GError, or %NULL
  * 
- * Get the access token asynchronously with an Instapaper account.
+ * Get the access token asynchronously with an Instapaper account following the xAuth
+ * specificication
  *
- * After call some query, you need to get an access token following the xAuth
- * specificication. If you have an access token and an access token private already 
- * you can skip this step and set it with ginstapaper_proxy_set_tokens().
+ * After call some query, you need to get an access token. If you have an access 
+ * token and an access token private already you can skip this step and set it with 
+ * ginstapaper_proxy_set_tokens().
  *
  * Returns: %TRUE if the request token query was successfully queued, or %FALSE on
  * failure. On failure @error is set.
