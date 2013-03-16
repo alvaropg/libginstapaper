@@ -47,9 +47,7 @@ struct _GInstapaperBookmarkClass
         GObjectClass parent_class;
 };
 
-GType        ginstapaper_bookmark_get_type (void) G_GNUC_CONST;
-const gchar *ginstapaper_bookmark_get_title (GInstapaperBookmark *bookmark);
-const gchar *ginstapaper_bookmark_get_description (GInstapaperBookmark *bookmark);
+GType    ginstapaper_bookmark_get_type (void) G_GNUC_CONST;
 
 G_END_DECLS
 

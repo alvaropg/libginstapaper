@@ -32,7 +32,8 @@
 #include "ginstapaper-bookmarks-call.h"
 #include "ginstapaper-bookmark.h"
 
-#define LIST_FUNCTION "bookmarks/list"
+#define LIST_FUNCTION     "bookmarks/list"
+#define GET_TEXT_FUNCTION "bookmarks/get_text"
 
 static void ginstapaper_bookmarks_call_class_init (GInstapaperBookmarksCallClass *klass);
 static void ginstapaper_bookmarks_call_init       (GInstapaperBookmarksCall *self);
@@ -65,6 +66,52 @@ ginstapaper_bookmarks_call_finalize (GObject *self)
 	G_OBJECT_CLASS(ginstapaper_bookmarks_call_parent_class)->finalize (self);
 }
 
+GList *
+parse_bookmarks_list (const gchar *payload)
+{
+        GList *bookmarks = NULL;
+        JsonParser *parser;
+        JsonNode *root_node;
+        GError *error;
+
+        parser = json_parser_new ();
+        if (json_parser_load_from_data (parser, payload, -1, &error)) {
+                root_node = json_parser_get_root (parser);
+                if (JSON_NODE_HOLDS_ARRAY (root_node)) {
+                        JsonArray *jarray;
+                        int i = 0;
+
+                        jarray = json_node_get_array (root_node);
+                        for (i = 0; i < json_array_get_length (jarray); i++) {
+                                JsonNode *node;
+
+                                node = json_array_get_element (jarray, i);
+                                if (JSON_NODE_HOLDS_OBJECT (node)) {
+                                        JsonObject *jobject;
+
+                                        jobject = json_node_get_object (node);
+                                        if (g_strcmp0 ("bookmark", json_object_get_string_member (jobject, "type")) == 0) {
+                                                GInstapaperBookmark *bookmark;
+
+                                                bookmark = GINSTAPAPER_BOOKMARK (json_gobject_deserialize (GINSTAPAPER_TYPE_BOOKMARK, node));
+                                                if (GINSTAPAPER_IS_BOOKMARK (bookmark)) {
+                                                        bookmarks = g_list_append (bookmarks, bookmark);
+                                                } else {
+                                                        g_debug ("Type bookmark object can't be deserialize");
+                                                }
+                                        }
+                                }
+                        }
+                } else {
+                        g_debug ("Root node isn't an array");
+                }
+        } else {
+                g_debug ("Can't parse payload");
+        }
+
+        return bookmarks;
+}
+
 static void
 list_cb (RestProxyCall *call, const GError *error, GObject *weak_object, gpointer user_data)
 {
@@ -78,43 +125,9 @@ list_cb (RestProxyCall *call, const GError *error, GObject *weak_object, gpointe
 
         if (!error) {
                 const gchar *payload;
-                JsonParser *parser;
-                JsonNode *root_node;
 
                 payload = rest_proxy_call_get_payload (call);
-                parser = json_parser_new ();
-                if (json_parser_load_from_data (parser, payload, -1, &error)) {
-                        root_node = json_parser_get_root (parser);
-                        if (JSON_NODE_HOLDS_ARRAY (root_node)) {
-                                JsonArray *jarray;
-                                int i = 0;
-
-                                jarray = json_node_get_array (root_node);
-                                for (i = 0; i < json_array_get_length (jarray); i++) {
-                                        JsonNode *node;
-                                        node = json_array_get_element (jarray, i);
-                                        if (JSON_NODE_HOLDS_OBJECT (node)) {
-                                                JsonObject *jobject;
-
-                                                jobject = json_node_get_object (node);
-                                                if (g_strcmp0 ("bookmark", json_object_get_string_member (jobject, "type")) == 0) {
-                                                        GInstapaperBookmark *bookmark;
-
-							bookmark = GINSTAPAPER_BOOKMARK (json_gobject_deserialize (GINSTAPAPER_TYPE_BOOKMARK, node));
-                                                        if (GINSTAPAPER_IS_BOOKMARK (bookmark)) {
-                                                                bookmarks = g_list_append (bookmarks, bookmark);
-                                                        } else {
-                                                                g_debug ("Type bookmark object can't be deserialize");
-                                                        }
-                                                }
-                                        }
-                                }
-                        } else {
-				g_debug ("Root node isn't an array");
-			}
-                } else {
-			g_debug ("Can't parse payload");
-		}
+                bookmarks = parse_bookmarks_list (payload);
         }
 
         data->callback (bookmarks, error, data->user_data);
@@ -129,17 +142,17 @@ list_cb (RestProxyCall *call, const GError *error, GObject *weak_object, gpointe
  * @limit: Optional. A number between 1 and 500, default 25. The limit of bookmarks for retrieve
  * @folder_id: Optional. Possible values are unread (default), starred, archive, or a folder_id value from /api/1/folders/list.
  * @have: Optional. A concatenation of bookmark_id values that the client already has from the specified folder.
- * @bookmarks_list: A #GList to store the #GInstapaperBookmark objects retrieved by Instapaper
  * @error: a #GError, or %NULL
  *
- * Returns: %TRUE if the get bookmarks list query was successfully executed, or %FALSE on
+ * Return value: #GList with the #GInstapaperBookmarks if the get bookmarks list query was successfully executed, or %NULL on
  * failure. On failure @error is set.
  */
-gboolean
-ginstapaper_bookmarks_call_list (GInstapaperBookmarksCall *bookmarks_call, guint limit, gchar *folder_id, gchar *have, GList **bookmark_list, GError **error)
+GList*
+ginstapaper_bookmarks_call_list (GInstapaperBookmarksCall *bookmarks_call, guint limit, gchar *folder_id, gchar *have, GError **error)
 {
         RestProxyCall *call;
-        gboolean ret;
+        gboolean result;
+        GList *bookmarks = NULL;
 
         g_return_val_if_fail (GINSTAPAPER_IS_BOOKMARKS_CALL (bookmarks_call), FALSE);
         g_return_val_if_fail (limit > 0 && limit < 501, FALSE);
@@ -154,12 +167,12 @@ ginstapaper_bookmarks_call_list (GInstapaperBookmarksCall *bookmarks_call, guint
                 rest_proxy_call_add_param (call, "have", have);
         }
 
-        ret = rest_proxy_call_sync (call, error);
-        if (ret) {
-                /* TODO: parse payload (in a common function with the async method */
+        result = rest_proxy_call_sync (call, error);
+        if (result) {
+                bookmarks = parse_bookmarks_list (rest_proxy_call_get_payload (call));
         }
 
-        return ret;
+        return bookmarks;
 }
 
 /**
@@ -172,7 +185,7 @@ ginstapaper_bookmarks_call_list (GInstapaperBookmarksCall *bookmarks_call, guint
  * @user_data: data to pass to @callback
  * @error: a #GError, or %NULL
  *
- * Returns: %TRUE if the get bookmarks list query was successfully queued, or %FALSE on
+ * Return value: %TRUE if the get bookmarks list query was successfully queued, or %FALSE on
  * failure. On failure @error is set.
  */
 gboolean
@@ -200,6 +213,43 @@ ginstapaper_bookmarks_call_list_async (GInstapaperBookmarksCall *bookmarks_call,
 
         return rest_proxy_call_async (call, list_cb, NULL, data, error);
 }
+
+/**
+ * ginstapaper_bookmark_get_text:
+ * @bookmarks_call: a #GInstapaperBookmarksCall
+ * @bookmark: a #GInstapaperBookmark
+ * @text: a #gchar where the processed text-view HTML will be placed
+ * @error: a #GError in case something goes wrong, or %NULL
+ *
+ * Synchronously retrieve of a specified bookmark’s processed text-view HTML.
+ *
+ * Return value: a #gchar with the processed text-view HTML (the string must be freed with g_free),
+ * or %NULL on failure. On failure, @error is set.
+ */
+gchar*
+ginstapaper_bookmarks_call_get_text (GInstapaperBookmarksCall *bookmarks_call, GInstapaperBookmark *bookmark, GError **error)
+{
+        RestProxyCall *call;
+        guint bookmark_id;
+        gboolean result;
+        gchar *text = NULL;
+
+        g_return_val_if_fail (GINSTAPAPER_IS_BOOKMARKS_CALL (bookmarks_call), FALSE);
+        g_return_val_if_fail (GINSTAPAPER_IS_BOOKMARK (bookmark), FALSE);
+
+        call = REST_PROXY_CALL (bookmarks_call);
+        rest_proxy_call_set_function (call, GET_TEXT_FUNCTION);
+        g_object_get (bookmark, "bookmark_id", &bookmark_id, NULL);
+        rest_proxy_call_add_param (call, "bookmark_id", g_strdup_printf ("%d", bookmark_id));
+
+        result = rest_proxy_call_sync (call, error);
+        if (result) {
+                text = g_strdup (rest_proxy_call_get_payload (call));
+        }
+
+        return text;
+}
+
 
 /**
  * ginstapaper_bookmarks_call_new:

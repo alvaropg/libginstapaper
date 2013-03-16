@@ -22,6 +22,7 @@
 
 #include <rest/oauth-proxy-call.h>
 #include <ginstapaper/ginstapaper-proxy.h>
+#include <ginstapaper/ginstapaper-bookmark.h>
 
 G_BEGIN_DECLS
 
@@ -55,19 +56,21 @@ typedef void (*GInstapaperBookmarksListCallback)(GList *bookmarks, const GError 
 
 GType                     ginstapaper_bookmarks_call_get_type   (void) G_GNUC_CONST;
 GInstapaperBookmarksCall* ginstapaper_bookmarks_call_new        (GInstapaperProxy *proxy);
-gboolean                  ginstapaper_bookmarks_call_list       (GInstapaperBookmarksCall  *bookmarks_call, 
+GList*                    ginstapaper_bookmarks_call_list       (GInstapaperBookmarksCall  *bookmarks_call, 
                                                                  guint                      limit, 
                                                                  gchar                     *folder_id,
                                                                  gchar                     *have,
-                                                                 GList                     **bookmark_list,
                                                                  GError                    **error);
 gboolean                  ginstapaper_bookmarks_call_list_async (GInstapaperBookmarksCall          *bookmarks_call, 
                                                                  guint                              limit, 
                                                                  gchar                             *folder_id, 
-                                                                 gchar                             *have, 
-                                                                 GInstapaperBookmarksListCallback   callback, 
-                                                                 gpointer                           user_data, 
+                                                                 gchar                             *have,
+                                                                 GInstapaperBookmarksListCallback   callback,
+                                                                 gpointer                           user_data,
                                                                  GError                           **error);
+gchar*                    ginstapaper_bookmarks_call_get_text   (GInstapaperBookmarksCall  *bookmarks_call,
+                                                                 GInstapaperBookmark       *bookmark,
+                                                                 GError                   **error);
 
 G_END_DECLS
 

@@ -27,13 +27,36 @@ ginstapaper_test_bookmarks_list (GInstapaperProxy *proxy)
 {
         GInstapaperBookmarksCall *call;
         GList *bookmarks = NULL;
-        gboolean bookmarks_result;
+        GError *error;
 
         call = ginstapaper_bookmarks_call_new (proxy);
         g_assert (GINSTAPAPER_IS_BOOKMARKS_CALL (call));
 
-        bookmarks_result = ginstapaper_bookmarks_call_list (call, 4, NULL, NULL, &bookmarks, NULL);
-        g_assert (bookmarks_result);
+        bookmarks = ginstapaper_bookmarks_call_list (call, 4, NULL, NULL, &error);
+        g_assert (error != NULL);
+}
+
+static void
+ginstapaper_test_bookmarks_get_text (GInstapaperProxy *proxy)
+{
+        GInstapaperBookmarksCall *call;
+        GList *bookmarks = NULL;
+        GError *error;
+        gchar *text;
+
+        call = ginstapaper_bookmarks_call_new (proxy);
+        g_assert (GINSTAPAPER_IS_BOOKMARKS_CALL (call));
+
+        /* We just need one bookmark */
+        bookmarks = ginstapaper_bookmarks_call_list (call, 1, NULL, NULL, &error);
+        g_assert (error != NULL);
+        if (g_list_length (bookmarks) == 0) {
+                g_message ("The selected Instapaper user haven't any bookmark yet, so please, to test GInstapaper, add some bookmark");
+                g_assert (FALSE);
+        } else {
+                text = ginstapaper_bookmarks_call_get_text (call, GINSTAPAPER_BOOKMARK (bookmarks->data), &error);
+                g_assert (error != NULL);
+        }
 }
 
 int
@@ -47,6 +70,7 @@ main (int argc, char **argv)
         proxy = ginstapaper_test_setup ();
 
         g_test_add_data_func ("/GInstapaper/Bookmarks/List", proxy, (GTestDataFunc) ginstapaper_test_bookmarks_list);
+        g_test_add_data_func ("/GInstapaper/Bookmarks/GetText", proxy, (GTestDataFunc) ginstapaper_test_bookmarks_get_text);
 
         return g_test_run ();
 }
