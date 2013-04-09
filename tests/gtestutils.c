@@ -2,10 +2,7 @@
 #include <glib.h>
 #include <ginstapaper/ginstapaper.h>
 
-#define GINSTAPAPER_TEST_CONSUMER_KEY    ""
-#define GINSTAPAPER_TEST_CONSUMER_SECRET ""
-#define GINSTAPAPER_TEST_USERNAME        ""
-#define GINSTAPAPER_TEST_PASSWORD        ""
+#include "credentials.h"
 
 GInstapaperProxy*
 ginstapaper_test_setup (void)
@@ -54,6 +51,8 @@ ginstapaper_test_bookmarks_get_text (GInstapaperProxy *proxy)
                 g_message ("The selected Instapaper user haven't any bookmark yet, so please, to test GInstapaper, add some bookmark");
                 g_assert (FALSE);
         } else {
+                error = NULL;
+                call = ginstapaper_bookmarks_call_new (proxy);
                 text = ginstapaper_bookmarks_call_get_text (call, GINSTAPAPER_BOOKMARK (bookmarks->data), &error);
                 g_assert (error != NULL);
         }

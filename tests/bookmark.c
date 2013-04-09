@@ -8,32 +8,47 @@
 static GMainLoop *loop;
 
 static void
-get_list_cb (GList *bookmarks, const GError *error, gpointer user_data)
+get_text_cb (GInstapaperBookmark *bookmark, const gchar *text, const GError *error, gpointer user_data)
 {
-        while (bookmarks) {
-                GInstapaperBookmark *book;
-                gchar *title;
-
-                book = bookmarks->data;
-                g_object_get (G_OBJECT (book), "title", &title, NULL);
-                g_print ("%s\n", title);
-                g_free (title);
-                g_object_unref (book);
-
-                bookmarks = g_list_next (bookmarks);
-        }
+        g_print ("Text:\n%s\n", text);
 
         g_main_loop_quit (loop);
 }
 
 static void
-get_list (GInstapaperProxy *proxy)
+get_list_cb (GList *bookmarks, const GError *error, gpointer user_data)
+{
+        GInstapaperBookmarksCall *call;
+        GInstapaperBookmark *book;
+        gchar *title, *url;
+        GError *nerror = NULL;
+
+        book = GINSTAPAPER_BOOKMARK (bookmarks->data);
+
+        g_object_get (G_OBJECT (book),
+                      "title", &title,
+                      "url", &url,
+                      NULL);
+
+        g_print ("Title: %s\n", title);
+        g_print ("URL: %s\n", url);
+
+        call = ginstapaper_bookmarks_call_new (GINSTAPAPER_PROXY (user_data));
+        ginstapaper_bookmarks_call_get_text_async (call, book, get_text_cb, NULL, &nerror);
+
+        g_free (title);
+        g_free (url);
+        g_object_unref (book);
+}
+
+static void
+get_bookmark (GInstapaperProxy *proxy)
 {
         GInstapaperBookmarksCall *call;
         GError *error = NULL;
 
         call = ginstapaper_bookmarks_call_new (proxy);
-        ginstapaper_bookmarks_call_list_async (call, 4, NULL, NULL, get_list_cb, NULL, &error);
+        ginstapaper_bookmarks_call_list_async (call, 1, NULL, NULL, get_list_cb, proxy, &error);
 }
 
 static gboolean
@@ -52,9 +67,7 @@ access_token_cb (OAuthProxy   *proxy,
 {
   g_assert_no_error ((GError *)error);
 
-  g_message ("Token: %s %s\n", oauth_proxy_get_token (proxy), oauth_proxy_get_token_secret (proxy));
-
-  get_list (GINSTAPAPER_PROXY (proxy));
+  get_bookmark (GINSTAPAPER_PROXY (proxy));
 }
 
 int
