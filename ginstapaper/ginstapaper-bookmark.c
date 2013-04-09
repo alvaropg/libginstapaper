@@ -17,6 +17,9 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
+#include <json-glib/json-glib.h>
+
 #include "ginstapaper-bookmark.h"
 
 enum
@@ -46,7 +49,7 @@ struct _GInstapaperBookmarkPrivate {
         gboolean  starred;
         gchar    *private_source;
         gchar    *hash;
-        guint     progress;
+        gdouble   progress;
         guint     progress_timestamp;
 };
 
@@ -56,7 +59,15 @@ static void ginstapaper_bookmark_finalize     (GObject *object);
 static void ginstapaper_bookmark_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec);
 static void ginstapaper_bookmark_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec);
 
-G_DEFINE_TYPE (GInstapaperBookmark, ginstapaper_bookmark, G_TYPE_OBJECT);
+static void  ginstapaper_bookmark_serializable_iface_init           (JsonSerializableIface *iface);
+JsonNode    *ginstapaper_bookmark_serializable_serialize_property   (JsonSerializable *serializable, const gchar *property_name, const GValue *value, GParamSpec *pspec);
+gboolean     ginstapaper_bookmark_serializable_deserialize_property (JsonSerializable *serializable, const gchar *property_name, GValue *value, GParamSpec *pspec, JsonNode *property_node);
+GParamSpec  *ginstapaper_bookmark_serializable_find_property        (JsonSerializable *serializable, const char *name);
+GParamSpec **ginstapaper_bookmark_serializable_list_properties      (JsonSerializable *serializable, guint *n_pspecs);
+void         ginstapaper_bookmark_serializable_set_property         (JsonSerializable *serializable, GParamSpec *pspec, const GValue *value);
+void         ginstapaper_bookmark_serializable_get_property         (JsonSerializable *serializable, GParamSpec *pspec, GValue *value);
+
+G_DEFINE_TYPE_WITH_CODE (GInstapaperBookmark, ginstapaper_bookmark, G_TYPE_OBJECT, G_IMPLEMENT_INTERFACE (JSON_TYPE_SERIALIZABLE, ginstapaper_bookmark_serializable_iface_init));
 
 static void
 ginstapaper_bookmark_class_init (GInstapaperBookmarkClass *klass)
@@ -188,11 +199,11 @@ ginstapaper_bookmark_class_init (GInstapaperBookmarkClass *klass)
          */
         g_object_class_install_property (object_class,
                                          PROP_PROGRESS,
-                                         g_param_spec_float ("progress",
-                                                             "Progress",
-                                                             "The user’s progress, as a floating-point number between 0.0 and 1.0, defined as the top edge of the user’s current viewport, expressed as a percentage of the bookmark’s total length.",
-                                                             0, 1, 0,
-                                                             G_PARAM_READABLE | G_PARAM_WRITABLE));
+                                         g_param_spec_double ("progress",
+                                                              "Progress",
+                                                              "The user’s progress, as a floating-point number between 0.0 and 1.0, defined as the top edge of the user’s current viewport, expressed as a percentage of the bookmark’s total length.",
+                                                              0.0, 1.0, 0.0,
+                                                              G_PARAM_READABLE | G_PARAM_WRITABLE));
 
         /**
          * GInstapaperBookmark:progress_timestamp
@@ -281,7 +292,7 @@ ginstapaper_bookmark_set_property (GObject *object, guint prop_id, const GValue 
                         priv->hash = g_strdup (g_value_get_string (value));
                         break;
                 case PROP_PROGRESS:
-                        priv->progress = g_value_get_uint (value);
+                        priv->progress = g_value_get_double (value);
                         break;
                 case PROP_PROGRESS_TIMESTAMP:
                         priv->progress_timestamp = g_value_get_uint (value);
@@ -329,7 +340,7 @@ ginstapaper_bookmark_get_property (GObject *object, guint prop_id, GValue *value
                         g_value_set_string (value, priv->hash);
                         break;
                 case PROP_PROGRESS:
-                        g_value_set_uint (value, priv->progress);
+                        g_value_set_double (value, priv->progress);
                         break;
                 case PROP_PROGRESS_TIMESTAMP:
                         g_value_set_uint (value, priv->progress_timestamp);
@@ -338,4 +349,197 @@ ginstapaper_bookmark_get_property (GObject *object, guint prop_id, GValue *value
                         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
                         break;
         }
+}
+
+static void
+ginstapaper_bookmark_serializable_iface_init (JsonSerializableIface *iface)
+{
+        iface->serialize_property = ginstapaper_bookmark_serializable_serialize_property;
+        iface->deserialize_property = ginstapaper_bookmark_serializable_deserialize_property;
+        iface->find_property = ginstapaper_bookmark_serializable_find_property;
+        iface->list_properties = ginstapaper_bookmark_serializable_list_properties;
+        iface->set_property = ginstapaper_bookmark_serializable_set_property;
+        iface->get_property = ginstapaper_bookmark_serializable_get_property;
+}
+
+JsonNode *
+ginstapaper_bookmark_serializable_serialize_property (JsonSerializable *serializable,
+                                                      const gchar *property_name,
+                                                      const GValue *value,
+                                                      GParamSpec *pspec)
+{
+        JsonNode *final_node = NULL;
+
+        if (g_strcmp0 ("type", property_name) == 0) {
+                final_node = json_serializable_default_serialize_property (serializable, property_name, value, pspec);
+        } else if (g_strcmp0 ("title", property_name) == 0) {
+                final_node = json_serializable_default_serialize_property (serializable, property_name, value, pspec);
+        } else if (g_strcmp0 ("bookmark-id", property_name) == 0) {
+                final_node = json_serializable_default_serialize_property (serializable, "bookmark_id", value, pspec);
+        } else if (g_strcmp0 ("url", property_name) == 0) {
+                final_node = json_serializable_default_serialize_property (serializable, property_name, value, pspec);
+        } else if (g_strcmp0 ("description", property_name) == 0) {
+                final_node = json_serializable_default_serialize_property (serializable, property_name, value, pspec);
+        } else if (g_strcmp0 ("time", property_name) == 0) {
+                final_node = json_serializable_default_serialize_property (serializable, property_name, value, pspec);
+        } else if (g_strcmp0 ("starred", property_name) == 0) {
+                final_node = json_serializable_default_serialize_property (serializable, property_name, value, pspec);
+        } else if (g_strcmp0 ("private-source", property_name) == 0) {
+                final_node = json_serializable_default_serialize_property (serializable, "private_source", value, pspec);
+        } else if (g_strcmp0 ("hash", property_name) == 0) {
+                final_node = json_serializable_default_serialize_property (serializable, property_name, value, pspec);
+        } else if (g_strcmp0 ("progress", property_name) == 0) {
+                /* Sometimes, the progress property from Instapaper comes as a string */
+                if (G_VALUE_HOLDS_STRING (value)) {
+                        gdouble progress;
+
+                        final_node = json_node_new (JSON_NODE_VALUE);
+                        progress = atof (g_value_get_string (value));
+                        json_node_set_double (final_node, progress);
+                } else {
+                        final_node = json_serializable_default_serialize_property (serializable, property_name, value, pspec);
+                }
+        } else if (g_strcmp0 ("progress-timestamp", property_name) == 0) {
+                final_node = json_serializable_default_serialize_property (serializable, "progress_timestamp", value, pspec);
+        } else {
+                g_warning ("Unrecognized property (%s) from Instapaper API", property_name);
+        }
+
+        return final_node;
+}
+
+gboolean
+ginstapaper_bookmark_serializable_deserialize_property (JsonSerializable *serializable,
+                                                        const gchar *property_name,
+                                                        GValue *value,
+                                                        GParamSpec *pspec,
+                                                        JsonNode *property_node)
+{
+        gboolean res;
+
+        if (g_strcmp0 ("type", property_name) == 0) {
+                res = json_serializable_default_deserialize_property (serializable, property_name, value, pspec, property_node);
+        } else if (g_strcmp0 ("title", property_name) == 0) {
+                res = json_serializable_default_deserialize_property (serializable, property_name, value, pspec, property_node);
+        } else if (g_strcmp0 ("bookmark-id", property_name) == 0) {
+                res = json_serializable_default_deserialize_property (serializable, "bookmark_id", value, pspec, property_node);
+        } else if (g_strcmp0 ("url", property_name) == 0) {
+                res = json_serializable_default_deserialize_property (serializable, property_name, value, pspec, property_node);
+        } else if (g_strcmp0 ("description", property_name) == 0) {
+                res = json_serializable_default_deserialize_property (serializable, property_name, value, pspec, property_node);
+        } else if (g_strcmp0 ("time", property_name) == 0) {
+                res = json_serializable_default_deserialize_property (serializable, property_name, value, pspec, property_node);
+        } else if (g_strcmp0 ("starred", property_name) == 0) {
+                res = json_serializable_default_deserialize_property (serializable, property_name, value, pspec, property_node);
+        } else if (g_strcmp0 ("private-source", property_name) == 0) {
+                res = json_serializable_default_deserialize_property (serializable, "private_source", value, pspec, property_node);
+        } else if (g_strcmp0 ("hash", property_name) == 0) {
+                res = json_serializable_default_deserialize_property (serializable, property_name, value, pspec, property_node);
+        } else if (g_strcmp0 ("progress", property_name) == 0) {
+                /* Sometimes, the progress property from Instapaper comes as a string */
+                GValue v;
+                gdouble progress;
+
+                json_node_get_value (property_node, &v);
+
+                if (G_VALUE_HOLDS_STRING (&v)) {
+                        progress = atof (json_node_get_string (property_node));
+                } else {
+                        progress = json_node_get_double (property_node);
+                }
+
+                g_value_set_double (value, progress);
+                res = TRUE;
+        } else if (g_strcmp0 ("progress-timestamp", property_name) == 0) {
+                res = json_serializable_default_deserialize_property (serializable, "progress_timestamp", value, pspec, property_node);
+        } else {
+                res = FALSE;
+                g_warning ("Unrecognized property (%s) from Instapaper API", property_name);
+        }
+
+        return res;
+}
+
+GParamSpec *
+ginstapaper_bookmark_serializable_find_property (JsonSerializable *serializable, const char *name)
+{
+        return g_object_class_find_property (G_OBJECT_GET_CLASS (GINSTAPAPER_BOOKMARK (serializable)), name);
+}
+
+GParamSpec **
+ginstapaper_bookmark_serializable_list_properties (JsonSerializable *serializable, guint *n_pspecs)
+{
+        return g_object_class_list_properties (G_OBJECT_GET_CLASS (GINSTAPAPER_BOOKMARK (serializable)), n_pspecs);
+}
+
+void
+ginstapaper_bookmark_serializable_set_property (JsonSerializable *serializable, GParamSpec *pspec, const GValue *value)
+{
+        guint prop_id;
+        const gchar *property_name = g_param_spec_get_name (pspec);
+
+        if (g_strcmp0 ("type", property_name) == 0) {
+                prop_id = PROP_TYPE;
+        } else if (g_strcmp0 ("bookmark-id", property_name) == 0) {
+                prop_id = PROP_BOOKMARK_ID;
+        } else if (g_strcmp0 ("url", property_name) == 0) {
+                prop_id = PROP_URL;
+        } else if (g_strcmp0 ("title", property_name) == 0) {
+                prop_id = PROP_TITLE;
+        } else if (g_strcmp0 ("description", property_name) == 0) {
+                prop_id = PROP_DESCRIPTION;
+        } else if (g_strcmp0 ("time", property_name) == 0) {
+                prop_id = PROP_TIME;
+        } else if (g_strcmp0 ("starred", property_name) == 0) {
+                prop_id = PROP_STARRED;
+        } else if (g_strcmp0 ("private-source", property_name) == 0) {
+                prop_id = PROP_PRIVATE_SOURCE;
+        } else if (g_strcmp0 ("hash", property_name) == 0) {
+                prop_id = PROP_HASH;
+        } else if (g_strcmp0 ("progress", property_name) == 0) {
+                prop_id = PROP_PROGRESS;
+        } else if (g_strcmp0 ("progress-timestamp", property_name) == 0) {
+                prop_id = PROP_PROGRESS_TIMESTAMP;
+        } else {
+                prop_id = 0;
+                g_warning ("Unrecognized property (%s) from Instapaper API", property_name);
+        }
+
+        ginstapaper_bookmark_set_property (GINSTAPAPER_BOOKMARK (serializable), prop_id, value, pspec);
+}
+
+void
+ginstapaper_bookmark_serializable_get_property (JsonSerializable *serializable, GParamSpec *pspec, GValue *value)
+{
+        guint prop_id;
+        const gchar *property_name = g_param_spec_get_name (pspec);
+
+        if (g_strcmp0 ("type", property_name) == 0) {
+                prop_id = PROP_TYPE;
+        } else if (g_strcmp0 ("bookmark-id", property_name) == 0) {
+                prop_id = PROP_BOOKMARK_ID;
+        } else if (g_strcmp0 ("url", property_name) == 0) {
+                prop_id = PROP_URL;
+        } else if (g_strcmp0 ("title", property_name) == 0) {
+                prop_id = PROP_TITLE;
+        } else if (g_strcmp0 ("description", property_name) == 0) {
+                prop_id = PROP_DESCRIPTION;
+        } else if (g_strcmp0 ("time", property_name) == 0) {
+                prop_id = PROP_TIME;
+        } else if (g_strcmp0 ("starred", property_name) == 0) {
+                prop_id = PROP_STARRED;
+        } else if (g_strcmp0 ("private-source", property_name) == 0) {
+                prop_id = PROP_PRIVATE_SOURCE;
+        } else if (g_strcmp0 ("hash", property_name) == 0) {
+                prop_id = PROP_HASH;
+        } else if (g_strcmp0 ("progress", property_name) == 0) {
+                prop_id = PROP_PROGRESS;
+        } else if (g_strcmp0 ("progress-timestamp", property_name) == 0) {
+                prop_id = PROP_PROGRESS_TIMESTAMP;
+        } else {
+                prop_id = 0;
+                g_warning ("Unrecognized property (%s) from Instapaper API", property_name);
+        }
+
+        ginstapaper_bookmark_get_property (GINSTAPAPER_BOOKMARK (serializable), prop_id, value, pspec);
 }
