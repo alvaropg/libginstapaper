@@ -54,23 +54,41 @@ struct _GInstapaperBookmarksCallClass {
  */
 typedef void (*GInstapaperBookmarksListCallback)(GList *bookmarks, const GError *error, gpointer user_data);
 
-GType                     ginstapaper_bookmarks_call_get_type   (void) G_GNUC_CONST;
-GInstapaperBookmarksCall* ginstapaper_bookmarks_call_new        (GInstapaperProxy *proxy);
-GList*                    ginstapaper_bookmarks_call_list       (GInstapaperBookmarksCall  *bookmarks_call, 
-                                                                 guint                      limit, 
+/**
+ * GInstapaperBookmarkTextCallback:
+ * @bookmark: a #GInstapaperBookmark
+ * @text: the bookmark's processed text-view HTML retrieved from Instapaper
+ * @error: a #GError
+ * @user_data: user data passed to the callback
+ *
+ * Callback function called when the processed text-view HTML from a bookmark was received.
+ */
+typedef void (*GInstapaperBookmarkTextCallback)(GInstapaperBookmark *bookmark, const gchar *text, const GError *error, gpointer user_data);
+
+GType                     ginstapaper_bookmarks_call_get_type (void) G_GNUC_CONST;
+GInstapaperBookmarksCall* ginstapaper_bookmarks_call_new      (GInstapaperProxy *proxy);
+
+GList*                    ginstapaper_bookmarks_call_list       (GInstapaperBookmarksCall  *bookmarks_call,
+                                                                 guint                      limit,
                                                                  gchar                     *folder_id,
                                                                  gchar                     *have,
                                                                  GError                    **error);
-gboolean                  ginstapaper_bookmarks_call_list_async (GInstapaperBookmarksCall          *bookmarks_call, 
-                                                                 guint                              limit, 
-                                                                 gchar                             *folder_id, 
+gboolean                  ginstapaper_bookmarks_call_list_async (GInstapaperBookmarksCall          *bookmarks_call,
+                                                                 guint                              limit,
+                                                                 gchar                             *folder_id,
                                                                  gchar                             *have,
                                                                  GInstapaperBookmarksListCallback   callback,
                                                                  gpointer                           user_data,
                                                                  GError                           **error);
-gchar*                    ginstapaper_bookmarks_call_get_text   (GInstapaperBookmarksCall  *bookmarks_call,
-                                                                 GInstapaperBookmark       *bookmark,
-                                                                 GError                   **error);
+
+gchar*                    ginstapaper_bookmarks_call_get_text       (GInstapaperBookmarksCall        *bookmarks_call,
+                                                                     GInstapaperBookmark             *bookmark,
+                                                                     GError                         **error);
+gboolean                  ginstapaper_bookmarks_call_get_text_async (GInstapaperBookmarksCall        *bookmarks_call,
+                                                                     GInstapaperBookmark             *bookmark,
+                                                                     GInstapaperBookmarkTextCallback  callback,
+                                                                     gpointer                         user_data,
+                                                                     GError                         **error);
 
 G_END_DECLS
 

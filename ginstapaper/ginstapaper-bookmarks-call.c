@@ -46,11 +46,17 @@ typedef struct {
         gpointer user_data;
 } ListData;
 
+typedef struct {
+        GInstapaperBookmarkTextCallback callback;
+        GInstapaperBookmark *bookmark;
+        gpointer user_data;
+} TextData;
+
 static void
 ginstapaper_bookmarks_call_class_init (GInstapaperBookmarksCallClass *klass)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	object_class->finalize = ginstapaper_bookmarks_call_finalize;
+        GObjectClass *object_class = G_OBJECT_CLASS (klass);
+        object_class->finalize = ginstapaper_bookmarks_call_finalize;
 }
 
 static void
@@ -63,7 +69,7 @@ ginstapaper_bookmarks_call_init (GInstapaperBookmarksCall *self)
 static void
 ginstapaper_bookmarks_call_finalize (GObject *self)
 {
-	G_OBJECT_CLASS(ginstapaper_bookmarks_call_parent_class)->finalize (self);
+        G_OBJECT_CLASS(ginstapaper_bookmarks_call_parent_class)->finalize (self);
 }
 
 GList *
@@ -131,8 +137,29 @@ list_cb (RestProxyCall *call, const GError *error, GObject *weak_object, gpointe
         }
 
         data->callback (bookmarks, error, data->user_data);
-        
+
         g_slice_free (ListData, data);
+        g_object_unref (call);
+}
+
+static void
+get_text_cb (RestProxyCall *call, const GError *error, GObject *weak_object, gpointer user_data)
+{
+        TextData *data = user_data;
+        const gchar *text = NULL;
+
+        g_debug ("Payload: %s\nStatus Code: %d\nStatus Message: %s\n",
+                 rest_proxy_call_get_payload (call),
+                 rest_proxy_call_get_status_code (call),
+                 rest_proxy_call_get_status_message (call));
+
+        if (!error) {
+                text = rest_proxy_call_get_payload (call);
+        }
+
+        data->callback (data->bookmark, text, error, data->user_data);
+
+        g_slice_free (TextData, data);
         g_object_unref (call);
 }
 
@@ -206,7 +233,7 @@ ginstapaper_bookmarks_call_list_async (GInstapaperBookmarksCall *bookmarks_call,
         if (have) {
                 rest_proxy_call_add_param (call, "have", have);
         }
-        
+
         data = g_slice_new0 (ListData);
         data->callback = callback;
         data->user_data = user_data;
@@ -250,6 +277,40 @@ ginstapaper_bookmarks_call_get_text (GInstapaperBookmarksCall *bookmarks_call, G
         return text;
 }
 
+/**
+ * ginstapaper_bookmarks_call_get_text_async:
+ * @bookmarks_call: The #GInstapaperBookmarksCall.
+ * @callback: a #GInstapaperBookmarkTextCallback to call when the bookmark's processed text-view was retrieved.
+ * @user_data: data to pass to @callback.
+ * @error: a #GError, or %NULL
+ *
+ * Asynchronously retrieve a specified bookmark¡s processed text-view HTML.
+ *
+ * Return value: %TRUE if the get text query was successfully queued, or %FALSE on
+ * failure. On failure @error is set.
+ */
+gboolean
+ginstapaper_bookmarks_call_get_text_async (GInstapaperBookmarksCall *bookmarks_call, GInstapaperBookmark *bookmark, GInstapaperBookmarkTextCallback callback, gpointer user_data, GError **error)
+{
+        RestProxyCall *call;
+        guint bookmark_id;
+        TextData *data;
+
+        g_return_val_if_fail (GINSTAPAPER_IS_BOOKMARKS_CALL (bookmarks_call), FALSE);
+        g_return_val_if_fail (GINSTAPAPER_IS_BOOKMARK (bookmark), FALSE);
+
+        call = REST_PROXY_CALL (bookmarks_call);
+        rest_proxy_call_set_function (call, GET_TEXT_FUNCTION);
+        g_object_get (bookmark, "bookmark_id", &bookmark_id, NULL);
+        rest_proxy_call_add_param (call, "bookmark_id", g_strdup_printf ("%d", bookmark_id));
+
+        data = g_slice_new0 (TextData);
+        data->callback = callback;
+        data->user_data = user_data;
+        data->bookmark = bookmark;
+
+        return rest_proxy_call_async (call, get_text_cb, NULL, data, error);
+}
 
 /**
  * ginstapaper_bookmarks_call_new:
@@ -264,5 +325,5 @@ ginstapaper_bookmarks_call_new (GInstapaperProxy *proxy)
 {
         g_return_val_if_fail (GINSTAPAPER_IS_PROXY (proxy), NULL);
 
-	return GINSTAPAPER_BOOKMARKS_CALL (g_object_new (GINSTAPAPER_TYPE_BOOKMARKS_CALL, "proxy", proxy, NULL));
+        return GINSTAPAPER_BOOKMARKS_CALL (g_object_new (GINSTAPAPER_TYPE_BOOKMARKS_CALL, "proxy", proxy, NULL));
 }
