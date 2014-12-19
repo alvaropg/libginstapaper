@@ -186,6 +186,7 @@ ginstapaper_bookmarks_call_list (GInstapaperBookmarksCall *bookmarks_call, guint
 
         call = REST_PROXY_CALL (bookmarks_call);
         rest_proxy_call_set_function (call, LIST_FUNCTION);
+        rest_proxy_call_set_method (call, "GET");
         rest_proxy_call_add_param (call, "limit", g_strdup_printf ("%d", limit));
         if (folder_id) {
                 rest_proxy_call_add_param (call, "foder_id", folder_id);
