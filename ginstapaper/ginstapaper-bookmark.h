@@ -24,26 +24,24 @@
 
 G_BEGIN_DECLS
 
-#define GINSTAPAPER_TYPE_BOOKMARK             (ginstapaper_bookmark_get_type ())
-#define GINSTAPAPER_BOOKMARK(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), GINSTAPAPER_TYPE_BOOKMARK, GInstapaperBookmark))
-#define GINSTAPAPER_BOOKMARK_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass), GINSTAPAPER_TYPE_BOOKMARK, GInstapaperBookmarkClass))
-#define GINSTAPAPER_IS_BOOKMARK(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GINSTAPAPER_TYPE_BOOKMARK))
-#define GINSTAPAPER_IS_BOOKMARK_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), GINSTAPAPER_TYPE_BOOKMARK))
-#define GINSTAPAPER_BOOKMARK_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), GINSTAPAPER_TYPE_BOOKMARK, GInstapaperBookmarkClass))
+#define GINSTAPAPER_TYPE_BOOKMARK             (ginstapaper_bookmark_get_type())
+#define GINSTAPAPER_BOOKMARK(obj)             (G_TYPE_CHECK_INSTANCE_CAST((obj),GINSTAPAPER_TYPE_BOOKMARK,GInstapaperBookmark))
+#define GINSTAPAPER_BOOKMARK_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST((klass), GINSTAPAPER_TYPE_BOOKMARK,GInstapaperBookmarkClass))
+#define GINSTAPAPER_IS_BOOKMARK(obj)          (G_TYPE_CHECK_INSTANCE_TYPE((obj),GINSTAPAPER_TYPE_BOOKMARK))
+#define GINSTAPAPER_IS_BOOKMARK_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE((klass), GINSTAPAPER_TYPE_BOOKMARK))
+#define GINSTAPAPER_BOOKMARK_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS((obj), GINSTAPAPER_TYPE_BOOKMARK,GInstapaperBookmarkClass))
 
 typedef struct _GInstapaperBookmark         GInstapaperBookmark;
 typedef struct _GInstapaperBookmarkPrivate  GInstapaperBookmarkPrivate;
 typedef struct _GInstapaperBookmarkClass    GInstapaperBookmarkClass;
 
-struct _GInstapaperBookmark
-{
-        GObject parent_instance;
+struct _GInstapaperBookmark {
+        GObject parent;
 
         GInstapaperBookmarkPrivate *priv;
 };
 
-struct _GInstapaperBookmarkClass
-{
+struct _GInstapaperBookmarkClass {
         GObjectClass parent_class;
 };
 

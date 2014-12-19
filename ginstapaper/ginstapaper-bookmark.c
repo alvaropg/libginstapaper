@@ -53,8 +53,6 @@ struct _GInstapaperBookmarkPrivate {
         guint     progress_timestamp;
 };
 
-static void ginstapaper_bookmark_class_init   (GInstapaperBookmarkClass *klass);
-static void ginstapaper_bookmark_init         (GInstapaperBookmark *self);
 static void ginstapaper_bookmark_finalize     (GObject *object);
 static void ginstapaper_bookmark_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec);
 static void ginstapaper_bookmark_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec);
@@ -67,13 +65,12 @@ GParamSpec **ginstapaper_bookmark_serializable_list_properties      (JsonSeriali
 void         ginstapaper_bookmark_serializable_set_property         (JsonSerializable *serializable, GParamSpec *pspec, const GValue *value);
 void         ginstapaper_bookmark_serializable_get_property         (JsonSerializable *serializable, GParamSpec *pspec, GValue *value);
 
-G_DEFINE_TYPE_WITH_CODE (GInstapaperBookmark, ginstapaper_bookmark, G_TYPE_OBJECT, G_IMPLEMENT_INTERFACE (JSON_TYPE_SERIALIZABLE, ginstapaper_bookmark_serializable_iface_init));
+G_DEFINE_TYPE_EXTENDED (GInstapaperBookmark, ginstapaper_bookmark, G_TYPE_OBJECT, 0, G_IMPLEMENT_INTERFACE (JSON_TYPE_SERIALIZABLE, ginstapaper_bookmark_serializable_iface_init));
 
 static void
 ginstapaper_bookmark_class_init (GInstapaperBookmarkClass *klass)
 {
         GObjectClass* object_class = G_OBJECT_CLASS (klass);
-        GObjectClass* parent_class = G_OBJECT_CLASS (klass);
 
         g_type_class_add_private (klass, sizeof (GInstapaperBookmarkPrivate));
 
@@ -91,7 +88,7 @@ ginstapaper_bookmark_class_init (GInstapaperBookmarkClass *klass)
                                          g_param_spec_string ("type",
                                                               "Object type", "The type of the object in the Instapaper API, in this case 'bookmark'.",
                                                               "bookmark",
-                                                              G_PARAM_CONSTRUCT | G_PARAM_READABLE | G_PARAM_WRITABLE |G_PARAM_STATIC_STRINGS ));
+                                                              G_PARAM_READWRITE));
 
         /**
          * GInstapaperBookmark:bookmark_id:
@@ -223,6 +220,8 @@ static void
 ginstapaper_bookmark_init (GInstapaperBookmark *self)
 {
         self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, GINSTAPAPER_TYPE_BOOKMARK, GInstapaperBookmarkPrivate);
+
+        self->priv->type = g_strdup ("bookmark");
 }
 
 static void
@@ -245,7 +244,6 @@ ginstapaper_bookmark_set_property (GObject *object, guint prop_id, const GValue 
 {
         GInstapaperBookmarkPrivate *priv;
 
-        g_return_if_fail (GINSTAPAPER_IS_BOOKMARK (object));
         priv = GINSTAPAPER_BOOKMARK (object)->priv;
 
         switch (prop_id) {
@@ -437,17 +435,13 @@ ginstapaper_bookmark_serializable_deserialize_property (JsonSerializable *serial
                 res = json_serializable_default_deserialize_property (serializable, property_name, value, pspec, property_node);
         } else if (g_strcmp0 ("progress", property_name) == 0) {
                 /* Sometimes, the progress property from Instapaper comes as a string */
-                GValue v;
                 gdouble progress;
 
-                json_node_get_value (property_node, &v);
-
-                if (G_VALUE_HOLDS_STRING (&v)) {
+                if (json_node_get_value_type (property_node) == G_TYPE_STRING) {
                         progress = atof (json_node_get_string (property_node));
                 } else {
                         progress = json_node_get_double (property_node);
                 }
-
                 g_value_set_double (value, progress);
                 res = TRUE;
         } else if (g_strcmp0 ("progress-timestamp", property_name) == 0) {
@@ -505,7 +499,7 @@ ginstapaper_bookmark_serializable_set_property (JsonSerializable *serializable, 
                 g_warning ("Unrecognized property (%s) from Instapaper API", property_name);
         }
 
-        ginstapaper_bookmark_set_property (GINSTAPAPER_BOOKMARK (serializable), prop_id, value, pspec);
+        ginstapaper_bookmark_set_property (G_OBJECT (GINSTAPAPER_BOOKMARK (serializable)), prop_id, value, pspec);
 }
 
 void
@@ -541,5 +535,5 @@ ginstapaper_bookmark_serializable_get_property (JsonSerializable *serializable, 
                 g_warning ("Unrecognized property (%s) from Instapaper API", property_name);
         }
 
-        ginstapaper_bookmark_get_property (GINSTAPAPER_BOOKMARK (serializable), prop_id, value, pspec);
+        ginstapaper_bookmark_get_property (G_OBJECT (GINSTAPAPER_BOOKMARK (serializable)), prop_id, value, pspec);
 }
