@@ -77,7 +77,7 @@ access_token_cb (RestProxyCall *call,
                  rest_proxy_call_get_status_message (call));
 
         if (!error) {
-                oauth_proxy_call_parse_token_response (OAUTH_PROXY_CALL (call));
+                oauth_proxy_call_parse_token_reponse (OAUTH_PROXY_CALL (call));
         }
 
         data->callback (proxy, error, weak_object, data->user_data);
@@ -125,7 +125,7 @@ ginstapaper_proxy_access_token (GInstapaperProxy  *gi_proxy,
                 return FALSE;
         }
 
-        oauth_proxy_call_parse_token_response (OAUTH_PROXY_CALL (call));
+        oauth_proxy_call_parse_token_reponse (OAUTH_PROXY_CALL (call));
 
         g_object_unref (call);
 
