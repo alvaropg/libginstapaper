@@ -1,4 +1,7 @@
 language: c
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y libjson-glib-dev librest-dev
 compiler:
         - gcc
 script: ./autogen.sh && make
